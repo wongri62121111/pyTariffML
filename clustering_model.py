@@ -67,7 +67,38 @@ def train_kmeans(n_clusters=3):
     
     return kmeans
 
+# Add to existing KMeans code
+def add_cluster_visualizations(kmeans, X, countries):
+    """Add advanced cluster visualizations"""
+    # 1. Parallel coordinates plot
+    import plotly.express as px
+    
+    cluster_df = pd.DataFrame(X, columns=['import_tariffs', 'export_tariffs'])
+    cluster_df['country'] = countries
+    cluster_df['cluster'] = kmeans.labels_
+    
+    fig = px.parallel_coordinates(
+        cluster_df, 
+        color='cluster',
+        dimensions=['import_tariffs', 'export_tariffs'],
+        labels={'import_tariffs':'Import Tariffs', 'export_tariffs':'Export Tariffs'},
+        title='Cluster Profiles - Parallel Coordinates'
+    )
+    fig.write_image('visualizations/parallel_coordinates.png')
+    
+    # 2. 3D plot if we had more dimensions
+    # 3. Cluster bar charts showing centroids
+    plt.figure(figsize=(10,6))
+    pd.DataFrame(kmeans.cluster_centers_, 
+                columns=['Import', 'Export']).plot(kind='bar')
+    plt.title('Cluster Centroids')
+    plt.ylabel('Scaled Tariff Values')
+    plt.savefig('visualizations/cluster_centroids.png')
+    plt.close()
+
 if __name__ == "__main__":
     X, _, _ = prepare_clustering_data()
     find_optimal_clusters(X)
     model = train_kmeans(n_clusters=3)
+    add_cluster_visualizations(model, X, _)
+    print("Clustering model trained and visualizations saved.")
