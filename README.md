@@ -5,6 +5,13 @@ This machine learning project analyzes US import and export tariffs using data f
 
 **Developers**: Abdallah Salem and Richard Wong
 
+
+![image](https://github.com/user-attachments/assets/c8947692-206f-4694-8a06-eeed123ad0a1)
+![image](https://github.com/user-attachments/assets/9969989e-05e7-4bd1-8e51-1bd3fbcfa693)
+![image](https://github.com/user-attachments/assets/f8663104-b6fc-4924-a962-01f82b252651)
+![image](https://github.com/user-attachments/assets/93e5f935-3374-4134-b61b-d017c98998bb)
+
+
 ## Project Structure
 ```
 pyTariffML/
