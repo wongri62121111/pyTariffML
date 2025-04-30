@@ -189,9 +189,16 @@ npm start
 | K-Means | Clustering | Import/Export Patterns | Country Clusters | Silhouette: X |
 
 ### Results
-- Best performing model: [Model Name] with [Metric] of [Value]
-- Key findings: [Summary of insights]
-- Limitations: [Data quality issues, model constraints]
+
+Best performing model: 
+
+- XGBoost with R² of 0.870
+
+Key findings:
+
+- Tariff values show consistent upward trends across most countries, with manufacturing sector consistently having the highest tariff values
+Predictive accuracy is significantly higher when incorporating economic indicators alongside historical tariff data
+Countries cluster into distinct groups based on their import/export tariff ratios, revealing geographic and economic relationships
 
 ## Contribution
 Equal contribution by both team members:
