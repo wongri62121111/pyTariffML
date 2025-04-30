@@ -5,12 +5,25 @@ This machine learning project analyzes US import and export tariffs using data f
 
 **Developers**: Abdallah Salem and Richard Wong
 
+
+![image](https://github.com/user-attachments/assets/c8947692-206f-4694-8a06-eeed123ad0a1)
+![image](https://github.com/user-attachments/assets/9969989e-05e7-4bd1-8e51-1bd3fbcfa693)
+![image](https://github.com/user-attachments/assets/f8663104-b6fc-4924-a962-01f82b252651)
+![image](https://github.com/user-attachments/assets/93e5f935-3374-4134-b61b-d017c98998bb)
+
+
 ## Project Structure
 ```
 pyTariffML/
 ├── data/                   # Processed and raw data files
 ├── models/                 # Trained model files
 ├── visualizations/         # Generated plots and charts
+├── WebPage/                # Web interface for the project
+│   ├── frontend/           # React-based user interface
+│   │   ├── src/            # React source code
+│   │   └── public/         # Static web assets
+│   └── backend/            # Flask API server
+│       └── app.py          # Flask application serving ML models
 ├── data_collection.py      # Data downloading and collection
 ├── data_preprocessing.py   # Data cleaning and preparation
 ├── exploratory_analysis.py # Initial data exploration
@@ -35,6 +48,7 @@ pyTariffML/
   - K-Means Clustering
 - **Evaluation Metrics**: MAE, RMSE, R², Explained Variance
 - **Visualizations**: Trend analysis, cluster plots, residual plots
+- **Interactive Web Interface**: User-friendly application for exploring tariff data and model predictions
 
 ## Installation
 1. Clone the repository:
@@ -46,6 +60,17 @@ cd pyTariffML
 2. Install dependencies:
 ```bash
 pip install -r requirements.txt
+```
+
+3. For the web interface, install additional dependencies:
+```bash
+# Backend dependencies
+cd WebPage/backend
+pip install flask pandas numpy
+
+# Frontend dependencies
+cd ../frontend
+npm install
 ```
 
 ## Usage
@@ -81,12 +106,53 @@ python model_visualization.py
 ```
 
 ## Web Application
-The deployed web application allows users to:
+The interactive web application allows users to:
 - View tariff trends and predictions
 - Interact with model outputs
 - Generate custom visualizations
+- Explore country clusters based on trade patterns
+- Compare model performance metrics
 
-**Access**: [Web Application URL]
+To run the web application:
+
+1. Start the backend server:
+```bash
+cd WebPage/backend
+python app.py
+```
+
+2. In a separate terminal, start the frontend:
+```bash
+cd WebPage/frontend
+npm start
+```
+
+3. Access the application at http://localhost:3000
+
+## Web Interface Features
+
+### Tariff Analysis
+- Interactive visualization of historical tariff trends
+- Country-specific tariff data exploration
+- Customizable year range selection
+- Tariff category distribution breakdown
+
+### Predictions
+- Future tariff value predictions using various ML models
+- Model selection (Linear Regression, Random Forest, XGBoost, ARIMA)
+- Prediction quality metrics (MAE, RMSE, R²)
+- Visual comparison between historical and predicted values
+
+### Country Clustering
+- Visual representation of country clusters based on trade patterns
+- Scatter plot visualization of import/export relationships
+- Cluster distribution analysis
+- Detailed country listings with cluster characteristics
+
+### Model Metrics
+- Performance comparison across all models
+- Detailed metrics (MAE, RMSE, R², Explained Variance)
+- Visual representation of model performance
 
 ## Project Report
 
@@ -137,3 +203,4 @@ Equal contribution by both team members:
 - Incorporate additional economic indicators
 - Develop real-time prediction system
 - Enhance web interface with more interactive features
+- Deploy web application to cloud platform for broader access
