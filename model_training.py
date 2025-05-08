@@ -1,98 +1,76 @@
 import pandas as pd
-from sklearn.model_selection import train_test_split
-from sklearn.linear_model import LinearRegression
+from sklearn.model_selection import TimeSeriesSplit
+from sklearn.pipeline import Pipeline
+from sklearn.compose import ColumnTransformer
+from sklearn.preprocessing import StandardScaler, OneHotEncoder
 from sklearn.ensemble import RandomForestRegressor
-from sklearn.preprocessing import StandardScaler
+from xgboost import XGBRegressor
 import joblib
-import os
 
-def create_models_dir():
-    """Create models directory if it doesn't exist"""
-    os.makedirs('models', exist_ok=True)
-
-def load_data():
-    """Load preprocessed data with error handling"""
-    try:
-        df = pd.read_csv('data/processed_tariff_data.csv')
-        # Verify required columns exist
-        required_cols = ['year', 'country_code', 'annual_import_tariffs']
-        if not all(col in df.columns for col in required_cols):
-            raise ValueError("Processed data is missing required columns")
-        return df
-    except FileNotFoundError:
-        print("Error: Processed data file not found. Run data_preprocessing.py first.")
-        return None
-    except Exception as e:
-        print(f"Error loading data: {str(e)}")
-        return None
-
-def prepare_data(df):
-    """
-    Prepare data for modeling
-    Returns X_train, X_test, y_train, y_test
-    """
-    # Convert year to numeric feature
-    df['year_num'] = pd.to_datetime(df['year']).dt.year
-    
-    # Use the correct column name from your data
-    X = df[['year_num', 'country_code']]
-    y = df['annual_import_tariffs']  # Changed from 'import_tariffs'
-    
-    # One-hot encode country_code
-    X = pd.get_dummies(X, columns=['country_code'])
-    
-    # Split data (80% train, 20% test)
-    X_train, X_test, y_train, y_test = train_test_split(
-        X, y, test_size=0.2, random_state=42
-    )
-    
-    # Scale features
-    scaler = StandardScaler()
-    X_train = scaler.fit_transform(X_train)
-    X_test = scaler.transform(X_test)
-    
-    # Save scaler for later use
-    create_models_dir()
-    joblib.dump(scaler, 'models/scaler.pkl')
-    
-    return X_train, X_test, y_train, y_test
-
-def train_linear_regression(X_train, y_train):
-    """Train and save a linear regression model"""
-    model = LinearRegression()
-    model.fit(X_train, y_train)
-    joblib.dump(model, 'models/linear_regression.pkl')
-    return model
-
-def train_random_forest(X_train, y_train):
-    """Train and save a random forest model"""
-    model = RandomForestRegressor(n_estimators=100, random_state=42)
-    model.fit(X_train, y_train)
-    joblib.dump(model, 'models/random_forest.pkl')
-    return model
-
-def train_models():
-    """Main function to train all models"""
-    create_models_dir()
-    
-    df = load_data()
-    if df is None:
-        return None, None
-    
-    try:
-        X_train, X_test, y_train, y_test = prepare_data(df)
+class TariffModelTrainer:
+    def __init__(self):
+        self.features = [
+            'year', 'country_code', 'gdp', 
+            'inflation_rate', 'tariff_intensity',
+            'region', 'trade_balance'
+        ]
+        self.target = 'inflation_adjusted_tariffs'
         
-        print("Training Linear Regression...")
-        lr_model = train_linear_regression(X_train, y_train)
+    def create_pipeline(self, model):
+        """Create a complete ML pipeline"""
+        numeric_features = ['gdp', 'inflation_rate', 'tariff_intensity']
+        categorical_features = ['country_code', 'region']
         
-        print("Training Random Forest...")
-        rf_model = train_random_forest(X_train, y_train)
+        preprocessor = ColumnTransformer(
+            transformers=[
+                ('num', StandardScaler(), numeric_features),
+                ('cat', OneHotEncoder(handle_unknown='ignore'), categorical_features)
+            ])
         
-        print("Model training complete!")
-        return lr_model, rf_model
-    except Exception as e:
-        print(f"Error during model training: {str(e)}")
-        return None, None
-
-if __name__ == "__main__":
-    train_models()
+        return Pipeline(steps=[
+            ('preprocessor', preprocessor),
+            ('regressor', model)
+        ])
+    
+    def train_models(self, data):
+        """Train and evaluate multiple models"""
+        X = data[self.features]
+        y = data[self.target]
+        
+        # Time-series aware cross-validation
+        tscv = TimeSeriesSplit(n_splits=5)
+        
+        models = {
+            'random_forest': RandomForestRegressor(
+                n_estimators=200,
+                max_depth=10,
+                random_state=42
+            ),
+            'xgboost': XGBRegressor(
+                n_estimators=150,
+                learning_rate=0.1,
+                early_stopping_rounds=10
+            )
+        }
+        
+        results = {}
+        for name, model in models.items():
+            pipeline = self.create_pipeline(model)
+            
+            # Cross-validate
+            cv_scores = cross_val_score(
+                pipeline, X, y, 
+                cv=tscv,
+                scoring='neg_mean_absolute_error'
+            )
+            
+            # Final training
+            pipeline.fit(X, y)
+            joblib.dump(pipeline, f'models/trained/{name}_pipeline.pkl')
+            
+            results[name] = {
+                'mae': -cv_scores.mean(),
+                'model': pipeline
+            }
+        
+        return results
